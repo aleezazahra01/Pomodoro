@@ -29,9 +29,11 @@ const Home = () => {
   });
   const [initial, setInitial] = useState<string>("");
   const [start, setStart] = useState(false);
-  const [mode, setMode] = useState<"work" | "break">(() => {
-    return (localStorage.getItem("pomo_mode") as "work" | "break") || "work";
-  });
+const [darkMode, setDarkMode] = useState(() => {
+  const saved = localStorage.getItem("theme");
+
+  return saved ? saved === "dark" : true;
+});
   const [time, setTime] = useState<number>(mode === "work" ? 25 * 60 : 5 * 60);
   const [sessions, setSessions] = useState<{ day: string; minutes: number }[]>(() => {
     const saved = localStorage.getItem("sessions");

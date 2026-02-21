@@ -254,7 +254,7 @@ const Home = () => {
             </div>
           </div>
 
-          <div className="order-3 flex justify-center lg:justify-end">
+          <div className="order-3  flex justify-center lg:ml-auto">
             <Music mode={mode} />
           </div>
         </div>

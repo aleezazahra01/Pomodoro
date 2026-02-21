@@ -41,7 +41,7 @@ const Home = () => {
     return localStorage.getItem("theme") === "dark";
   });
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const pink = "#E053A6";

@@ -23,25 +23,29 @@ const Home = () => {
     completed: boolean;
   };
 
+
+  const [mode, setMode] = useState<"work" | "break">(() => {
+    return (localStorage.getItem("pomo_mode") as "work" | "break") || "work";
+  });
+
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem("theme");
+   
+    return saved ? saved === "dark" : true;
+  });
+
   const [tasks, setTasks] = useState<Task[]>(() => {
     const saved = localStorage.getItem("tasks");
     return saved ? JSON.parse(saved) : [];
   });
   const [initial, setInitial] = useState<string>("");
   const [start, setStart] = useState(false);
-const [darkMode, setDarkMode] = useState(() => {
-  const saved = localStorage.getItem("theme");
-
-  return saved ? saved === "dark" : true;
-});
   const [time, setTime] = useState<number>(mode === "work" ? 25 * 60 : 5 * 60);
   const [sessions, setSessions] = useState<{ day: string; minutes: number }[]>(() => {
     const saved = localStorage.getItem("sessions");
     return saved ? JSON.parse(saved) : [];
   });
-  const [darkMode, setDarkMode] = useState(() => {
-    return localStorage.getItem("theme") === "dark";
-  });
+
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -71,16 +75,13 @@ const [darkMode, setDarkMode] = useState(() => {
   const totalTime = mode === "work" ? 25 * 60 : 5 * 60;
   const progressPercent = ((totalTime - time) / totalTime) * 100;
 
-
   useEffect(() => {
     if (start) {
       timerRef.current = setInterval(() => {
         setTime((prev) => {
           if (prev <= 1) {
-            clearInterval(timerRef.current!);
+            if (timerRef.current) clearInterval(timerRef.current);
             setStart(false);
-
-   
             audioRef.current?.play();
 
             const today = new Date().toLocaleDateString("en-US", { weekday: "short" });
@@ -97,7 +98,6 @@ const [darkMode, setDarkMode] = useState(() => {
               }
             });
 
-         
             if (Notification.permission === "granted") {
               new Notification(
                 mode === "work"
@@ -105,14 +105,12 @@ const [darkMode, setDarkMode] = useState(() => {
                   : "Break over! Back to focus "
               );
             }
-
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
     }
-
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
@@ -125,7 +123,6 @@ const [darkMode, setDarkMode] = useState(() => {
     localStorage.setItem("pomo_mode", mode);
   }, [tasks, sessions, darkMode, mode]);
 
- 
   useEffect(() => {
     if ("Notification" in window && Notification.permission === "default") {
       Notification.requestPermission();
@@ -140,7 +137,10 @@ const [darkMode, setDarkMode] = useState(() => {
   return (
     <div 
       className="min-h-screen w-full relative transition-colors duration-500" 
-      style={{ backgroundColor: darkMode ? undefined : lightBg, color: darkMode ? "#fff" : "var(--home-text)" }}
+      style={{ 
+        backgroundColor: darkMode ? undefined : lightBg, 
+        color: darkMode ? "#fff" : "var(--home-text)" 
+      }}
     >
       {darkMode && (
         <div style={{ background: meshBg }} className="fixed inset-0 z-0 transition-opacity duration-1000" />
@@ -149,7 +149,6 @@ const [darkMode, setDarkMode] = useState(() => {
       <Head darkMode={darkMode} mode={mode} />
 
       <div className="relative z-10 w-full px-4 py-10 md:px-10 lg:px-20 flex flex-col items-center">
-   
         <div className="w-full max-w-7xl flex justify-end mb-4">
           <button 
             onClick={() => setDarkMode(!darkMode)}
@@ -160,7 +159,7 @@ const [darkMode, setDarkMode] = useState(() => {
         </div>
 
         <div className="grid grid-cols-1 mt-3 lg:grid-cols-3 gap-12 w-full max-w-7xl items-start">
-       
+    
           <div className="order-2 lg:order-1 flex flex-col space-y-6 w-full">
             <div className="flex gap-2">
               <input
@@ -207,7 +206,7 @@ const [darkMode, setDarkMode] = useState(() => {
             </div>
           </div>
 
-        
+     
           <div className="order-1 lg:order-2 flex flex-col items-center space-y-8">
             <div className="flex gap-4">
               <button 
@@ -256,12 +255,13 @@ const [darkMode, setDarkMode] = useState(() => {
             </div>
           </div>
 
-          <div className="order-3  flex justify-center lg:ml-auto">
+    
+          <div className="order-3 flex justify-center lg:justify-end">
             <Music mode={mode} />
           </div>
         </div>
 
-  
+
         <div className="w-full max-w-6xl mt-20">
           <div className={`p-8 rounded-3xl shadow-sm border ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
             <h2 className={`text-2xl font-bold mb-8 flex items-center gap-2`}>
@@ -288,7 +288,7 @@ const [darkMode, setDarkMode] = useState(() => {
           </div>
         </div>
 
- 
+     
         <div className={`w-full max-w-6xl mt-12 mb-20 rounded-3xl p-10 flex flex-col items-center text-center transition-colors duration-500 ${darkMode ? "bg-gray-800/50" : (mode === "work" ? "bg-pink-50" : "bg-blue-50")}`}>
           <h1 style={{ fontFamily: "Poppins, sans-serif" }} className="text-3xl font-bold mb-6">How does it work?</h1>
           <p className={`leading-relaxed max-w-2xl mb-10 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>

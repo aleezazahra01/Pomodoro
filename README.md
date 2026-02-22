@@ -62,7 +62,7 @@ The app includes features such as a todo list, notes, dark/light mode, music int
 - **Styling:** Tailwind CSS
 - **Charts & Progress:** Recharts, react-circular-progressbar
 - **Audio & Notifications:** HTML5 Audio, Browser Notification API
-- **Deployment:** Netlify
+- **Deployment:** Vercel
 
 ---
 

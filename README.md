@@ -8,11 +8,13 @@ The app includes features such as a todo list, notes, dark/light mode, music int
 ---
 
 ## Features
+Automated Pomodoro Cycles: The timer no longer just stops at zero. It intelligently switches from Work mode to Break mode automatically, keeping your flow going without manual input.
 
-- **Pomodoro & Break Modes**
-  - Switch between work (Pomodoro) sessions and short breaks.
-  - Default intervals: 25 minutes for work, 5 minutes for breaks.
-  - Start, pause, and reset timers easily.
+Dynamic Long Break Logic: Integrated the "true" Pomodoro methodology where the app tracks your progress. After every 4 focus sessions, the timer automatically scales up to a 15-minute Long Break instead of the standard 5 minutes.
+Smart Session Tracking: Added a session counter (sessionCount) that manages your work/break transitions behind the scenes while keeping the UI clean and focused.
+Intelligent Progress Calculation: The circular progress bar now dynamically adapts its percentage based on whether you are in a Work, Short Break, or Long Break session.
+Context-Aware Notifications: Browser notifications now specify exactly what stage you are entering—alerting you specifically when it’s time for that well-earned long break.
+Persistent State Management: Your session counts and focus minutes are saved to localStorage, so your progress towards a long break isn't lost if you refresh the pag
 
 - **Customizable Themes**
   - Toggle between dark mode and light mode.
@@ -28,10 +30,6 @@ The app includes features such as a todo list, notes, dark/light mode, music int
   - Displays productivity stats via a responsive bar chart.
   - Shows completed sessions for the week to identify focus trends.
 
-- **Audio Alerts & Notifications**
-  - Plays sound when a session or break ends.
-  - Browser notifications alert users when sessions finish.
-  - Users can grant notification permissions for real-time updates.
 
 - **Music Integration**
   - Optional background music to improve focus during sessions.
@@ -41,18 +39,9 @@ The app includes features such as a todo list, notes, dark/light mode, music int
   - Fully responsive layout for mobile, tablet, and desktop devices.
   - Uses circular progress bar to visually show remaining time.
 
-- **Visual & UX Enhancements**
-  - Circular progress bar with dynamic color based on session type.
-  - Gradient mesh background in dark mode.
-  - Hover animations on icons for task and break illustrations.
-
 - **Local Storage Persistence**
   - Tasks, sessions, theme, and mode are saved in localStorage.
   - Data persists between page reloads.
-
-- **Notes & Todo Integration**
-  - Users can add notes about tasks or sessions.
-  - Provides insight into productivity habits.
 
 ---
 

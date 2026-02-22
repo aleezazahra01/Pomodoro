@@ -256,9 +256,13 @@ const Home = () => {
           </div>
 
     
-          <div className="order-3 flex justify-center lg:justify-end">
-            <Music mode={mode} />
-          </div>
+        <div className="order-3 w-full flex justify-center lg:justify-end">
+  <div className="w-[90%] sm:w-[70%] md:w-[320px] lg:w-full">
+    <Music mode={mode} />
+  </div>
+</div>
+
+          
         </div>
 
 

@@ -1,9 +1,12 @@
+import { FiSun, FiMoon } from "react-icons/fi";
+
 interface HeadProps {
   darkMode: boolean;
+   setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
   mode: "work" | "break";
 }
 
-const Head = ({ darkMode, mode }: HeadProps) => {
+const Head = ({ darkMode,setDarkMode, mode }: HeadProps) => {
   const accentColor = mode === "work" ? "#E053A6" : "#3B82F6";
 
   return (
@@ -24,17 +27,37 @@ const Head = ({ darkMode, mode }: HeadProps) => {
       
        
       </div>
+      
+      
 
 
-      <div className="hidden md:flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-lg shadow-sm">
-        <div 
-          className="w-2 h-2 rounded-full animate-pulse" 
-          style={{ backgroundColor: accentColor, boxShadow: `0 0 10px ${accentColor}` }}
-        />
-        <span className="text-xs font-bold uppercase tracking-widest opacity-70">
-          {mode === "work" ? "Deep Focus" : "Recharging"}
-        </span>
-      </div>
+      <div className="flex items-center gap-4">
+
+  <div className="hidden md:flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-lg shadow-sm">
+    <div 
+      className="w-2 h-2 rounded-full animate-pulse" 
+      style={{ backgroundColor: accentColor, boxShadow: `0 0 10px ${accentColor}` }}
+    />
+    <span className="text-xs font-bold uppercase tracking-widest opacity-70">
+      {mode === "work" ? "Deep Focus" : "Recharging"}
+    </span>
+  </div>
+
+  <div
+    onClick={() => setDarkMode(prev => !prev)}
+    className={`cursor-pointer w-10 h-10 flex items-center justify-center 
+                rounded-full backdrop-blur-md shadow-lg 
+                hover:scale-110 transition-all duration-300
+                ${darkMode ? "bg-white/10" : "bg-black/10"}`}
+  >
+    {darkMode ? (
+      <FiSun className="text-yellow-400 text-xl" />
+    ) : (
+      <FiMoon className="text-gray-800 text-xl" />
+    )}
+  </div>
+
+</div>
     </nav>
   );
 };

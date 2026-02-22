@@ -33,11 +33,7 @@ const tracks = [
     file: "/sounds/gamma-beats.mp3", 
     cover: "https://images.unsplash.com/photo-1439405326854-014607f694d7?w=500&h=200&fit=crop" 
   },
-  { 
-    name: "Red Focus", 
-    file: "/sounds/focus-beats.mp3", 
-    cover: "https://images.unsplash.com/photo-1547633513-333068e6f1f8?w=500&h=200&fit=crop" 
-  },
+ 
 ];
 
 interface MusicProps {

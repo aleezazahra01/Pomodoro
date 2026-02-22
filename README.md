@@ -1,73 +1,54 @@
-# React + TypeScript + Vite
+# Pomodoro Timer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Overview
+Pomodoro Timer is a productivity-focused web application built using the Pomodoro technique. It helps users manage work and break intervals effectively, improve focus, and track tasks. This app combines a simple, user-friendly interface with advanced features like session tracking, notes, insights, and a todo list to maximize productivity.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## React Compiler
+- **Customizable Timer**
+  - Set work session duration, short breaks, and long breaks.
+  - Adjust intervals according to personal workflow.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Start, Pause, and Reset**
+  - Full control over the timer to start, pause, or reset at any time.
 
-## Expanding the ESLint configuration
+- **Session Tracking**
+  - Automatically counts completed Pomodoro sessions.
+  - Displays session progress for better motivation.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Todo List**
+  - Add tasks to a todo list to stay organized.
+  - Mark tasks as completed after finishing sessions.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **Notes**
+  - Add quick notes during or after sessions.
+  - Capture reflections, ideas, or observations.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **Insights**
+  - View productivity patterns and summaries of completed sessions.
+  - Helps users identify distractions and improve workflow.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- **Notifications**
+  - Alerts users when a session or break ends.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- **Audio Feedback**
+  - Plays sound when sessions or breaks finish.
+  - Can be muted for a silent experience.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- **Responsive Design**
+  - Works on desktop, tablet, and mobile devices.
+  - Layout adapts for a consistent experience across screens.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- **Lightweight and Fast**
+  - Minimal dependencies for fast load times and smooth performance.
+
+---
+
+## Tech Stack
+
+React Js | Typescript | TailwindCss
+
+---
+

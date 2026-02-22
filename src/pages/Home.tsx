@@ -23,17 +23,18 @@ const Home = () => {
     text: string;
     completed: boolean;
   };
+
   const [mode, setMode] = useState<"work" | "break">("work");
   const [darkMode, setDarkMode] = useState(true);
   const [time, setTime] = useState<number>(25 * 60);
-  const [sessionCount, setSessionCount] = useState(0); // Added for the long break logic
+  const [start, setStart] = useState(false);
+  const [sessionCount, setSessionCount] = useState(0);
 
   const [tasks, setTasks] = useState<Task[]>(() => {
     const saved = localStorage.getItem("tasks");
     return saved ? JSON.parse(saved) : [];
   });
   const [initial, setInitial] = useState<string>("");
-  const [start, setStart] = useState(false);
 
   const [sessions, setSessions] = useState<{ day: string; minutes: number }[]>(() => {
     const saved = localStorage.getItem("sessions");
@@ -45,7 +46,6 @@ const Home = () => {
 
   const pink = "#E053A6";
   const blue = "#3B82F6";
-  
   const currentThemeColor = mode === "work" ? pink : blue;
 
   const meshBg = mode === "work"
@@ -66,68 +66,62 @@ const Home = () => {
     setInitial("");
   };
 
+  // Logic to handle the end of a timer
+  const handleSwitch = () => {
+    audioRef.current?.play();
+    const today = new Date().toLocaleDateString("en-US", { weekday: "short" });
 
-  const getTotalTime = () => {
-    if (mode === "work") return 25 * 60;
-    return (sessionCount > 0 && sessionCount % 4 === 0) ? 15 * 60 : 5 * 60;
+    if (mode === "work") {
+      const nextCount = sessionCount + 1;
+      setSessionCount(nextCount);
+      setMode("break");
+      
+      const isLongBreak = nextCount > 0 && nextCount % 4 === 0;
+      setTime(isLongBreak ? 15 * 60 : 5 * 60);
+
+      setSessions((prevSessions) => {
+        const existing = prevSessions.find((s) => s.day === today);
+        if (existing) {
+          return prevSessions.map((s) =>
+            s.day === today ? { ...s, minutes: s.minutes + 25 } : s
+          );
+        } else {
+          return [...prevSessions, { day: today, minutes: 25 }];
+        }
+      });
+
+      if (Notification.permission === "granted") {
+        new Notification(isLongBreak ? "Time for a 15-min Long Break!" : "Work done! Take a break.");
+      }
+    } else {
+      setMode("work");
+      setTime(25 * 60);
+      if (Notification.permission === "granted") {
+        new Notification("Break over! Focus time.");
+      }
+    }
   };
 
-  const progressPercent = ((getTotalTime() - time) / getTotalTime()) * 100;
-
+  // Main Timer Effect
   useEffect(() => {
-    if (start) {
+    if (start && time > 0) {
       timerRef.current = setInterval(() => {
-        setTime((prev) => {
-          if (prev <= 1) {
-            audioRef.current?.play();
-
-            const today = new Date().toLocaleDateString("en-US", { weekday: "short" });
-         
-            if (mode === "work") {
-              const nextCount = sessionCount + 1;
-              setSessionCount(nextCount);
-              setMode("break");
-              setTime(nextCount % 4 === 0 ? 15 * 60 : 5 * 60);
-              
-              setSessions((prevSessions) => {
-                const existing = prevSessions.find((s) => s.day === today);
-                if (existing) {
-                  return prevSessions.map((s) =>
-                    s.day === today ? { ...s, minutes: s.minutes + 25 } : s
-                  );
-                } else {
-                  return [...prevSessions, { day: today, minutes: 25 }];
-                }
-              });
-            } else {
-              setMode("work");
-              setTime(25 * 60);
-            }
-
-            if (Notification.permission === "granted") {
-              new Notification(
-                mode === "work"
-                  ? "Work session complete! Time for a break"
-                  : "Break over! Back to focus"
-              );
-            }
-            return 0;
-          }
-          return prev - 1;
-        });
+        setTime((prev) => prev - 1);
       }, 1000);
+    } else if (time === 0 && start) {
+      handleSwitch();
     }
+
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [start, mode, sessionCount]); 
+  }, [start, time, mode]);
 
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(tasks));
     localStorage.setItem("sessions", JSON.stringify(sessions));
     localStorage.setItem("theme", darkMode ? "dark" : "light");
-    localStorage.setItem("pomo_mode", mode);
-  }, [tasks, sessions, darkMode, mode]);
+  }, [tasks, sessions, darkMode]);
 
   useEffect(() => {
     if ("Notification" in window && Notification.permission === "default") {
@@ -139,6 +133,9 @@ const Home = () => {
   useEffect(() => {
     document.title = start ? `(${formatTime(time)}) Pomodoro` : "Pomodoro App";
   }, [time, start]);
+
+  const totalPossibleTime = mode === "work" ? 25 * 60 : (sessionCount > 0 && sessionCount % 4 === 0 ? 15 * 60 : 5 * 60);
+  const progressPercent = ((totalPossibleTime - time) / totalPossibleTime) * 100;
 
   return (
     <div 
@@ -154,59 +151,85 @@ const Home = () => {
 
       <Head darkMode={darkMode} mode={mode} setDarkMode={setDarkMode}/>
 
-
       <div className="relative z-10 w-full px-4 py-10 md:px-10 lg:px-20 flex flex-col items-center">
-   
-
         <div className="grid grid-cols-1 mt-3 lg:grid-cols-3 gap-12 w-full max-w-7xl items-start">
-    
-          <div className="order-2 lg:order-1 lg:mr-9 lg:mt-24 flex flex-col space-y-6 w-full">
-            <div className="flex gap-2">
-              <input
-                onKeyDown={(e) => e.key === "Enter" && addTask()}
-                onChange={(e) => setInitial(e.target.value)}
-                value={initial}
-                className={`flex-1 p-3 rounded-lg border focus:outline-none focus:ring-2 shadow-sm ${darkMode ? "bg-gray-800 border-gray-700 text-white focus:ring-blue-400" : "bg-white border-gray-200 focus:ring-pink-300"}`}
-                placeholder="What are you working on?"
-              />
-              <button
-                onClick={addTask}
-                style={{ backgroundColor: currentThemeColor }}
-                className="text-white px-6 py-2 rounded-lg transition-colors shadow-sm font-bold"
-              >
-                Add
-              </button>
-            </div>
+        {/* TASK LIST SECTION */}
+<div className="order-2 lg:order-1 lg:mr-9 lg:mt-24 flex flex-col space-y-6 w-full">
+  <div className="flex gap-2">
+    <input
+      onKeyDown={(e) => e.key === "Enter" && addTask()}
+      onChange={(e) => setInitial(e.target.value)}
+      value={initial}
+      className={`flex-1 p-3 rounded-lg border focus:outline-none focus:ring-2 shadow-sm ${darkMode ? "bg-gray-800 border-gray-700 text-white focus:ring-blue-400" : "bg-white border-gray-200 focus:ring-pink-300"}`}
+      placeholder="What are you working on?"
+    />
+    <button
+      onClick={addTask}
+      style={{ backgroundColor: currentThemeColor }}
+      className="text-white px-6 py-2 rounded-lg transition-colors shadow-sm font-bold"
+    >
+      Add
+    </button>
+  </div>
 
-            <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
-              {tasks.map((t, index) => (
-                <div
-                  key={index}
-                  className={`flex items-center justify-between p-4 rounded-xl shadow-sm border-l-4 ${darkMode ? "bg-gray-800" : "bg-white"}`}
-                  style={{ borderLeftColor: currentThemeColor }}
-                >
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={t.completed}
-                      onChange={() => {
-                        const newTasks = [...tasks];
-                        newTasks[index].completed = !newTasks[index].completed;
-                        setTasks(newTasks);
-                      }}
-                      className="w-5 h-5 cursor-pointer accent-blue-500"
-                    />
-                    <span className={`${t.completed ? "line-through text-gray-400" : "font-medium"}`}>
-                      {t.text}
-                    </span>
-                  </div>
-                  <button onClick={() => setTasks(tasks.filter((_, i) => i !== index))} className="text-gray-400 hover:text-red-500">✕</button>
-                </div>
-              ))}
-            </div>
-          </div>
+  <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
+    {tasks.map((t, index) => (
+      <div
+        key={index}
+        className={`flex items-center justify-between p-4 rounded-xl shadow-sm border-l-4 ${darkMode ? "bg-gray-800" : "bg-white"}`}
+        style={{ borderLeftColor: currentThemeColor }}
+      >
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            checked={t.completed}
+            onChange={() => {
+              const newTasks = [...tasks];
+              newTasks[index].completed = !newTasks[index].completed;
+              setTasks(newTasks);
+            }}
+            className="w-5 h-5 cursor-pointer accent-blue-500"
+          />
+          <span className={`${t.completed ? "line-through text-gray-400" : "font-medium"}`}>
+            {t.text}
+          </span>
+        </div>
+        <button onClick={() => setTasks(tasks.filter((_, i) => i !== index))} className="text-gray-400 hover:text-red-500">✕</button>
+      </div>
+    ))}
 
-     
+    {/* NEW PLACEHOLDER CARD - Fills the blank space */}
+    <div 
+      className={`mt-4 p-6 rounded-xl border-2 border-dashed flex flex-col items-center justify-center text-center transition-all duration-500 ${darkMode ? "bg-gray-800/20" : "bg-gray-50/50"}`}
+      style={{ borderColor: `${currentThemeColor}44` }} // Adds 44 for low opacity/alpha
+    >
+      <div 
+        className="mb-3 p-3 rounded-full bg-opacity-10" 
+        style={{ backgroundColor: `${currentThemeColor}22`, color: currentThemeColor }}
+      >
+        {mode === "work" ? (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        )}
+      </div>
+      <p className={`text-sm font-medium ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+        {mode === "work" 
+          ? "Stay focused! One task at a time." 
+          : "Time to recharge. Grab some water!"}
+      </p>
+      {tasks.length === 0 && (
+        <p className="text-xs mt-2 opacity-50">Your task list is currently empty.</p>
+      )}
+    </div>
+  </div>
+</div>
+          {/*tasks session*/}
+
           <div className="order-1 lg:order-2 flex flex-col items-center space-y-8">
             <div className="flex gap-4">
               <button 
@@ -250,7 +273,7 @@ const Home = () => {
                 {start ? "Pause" : "Start"}
               </button>
               <button
-                onClick={() => { setStart(false); setTime(mode === "work" ? 25*60 : ((sessionCount > 0 && sessionCount % 4 === 0) ? 15*60 : 5*60)); }}
+                onClick={() => { setStart(false); setTime(mode === "work" ? 25*60 : (sessionCount > 0 && sessionCount % 4 === 0 ? 15*60 : 5*60)); }}
                 style={{ borderColor: currentThemeColor, color: currentThemeColor }}
                 className="px-8 py-2 border-2 font-semibold rounded-full hover:bg-white/10 transition-all"
               >
@@ -259,13 +282,12 @@ const Home = () => {
             </div>
           </div>
 
-    <div className="order-3 w-full flex justify-center lg:justify-end">
-  <div className="w-[90%] lg:mt-8 sm:w-[70%] md:w-[320px] lg:w-full">
-    <Music mode={mode} />
-  </div>
-</div>
+          <div className="order-3 w-full flex justify-center lg:justify-end">
+            <div className="w-[90%] lg:mt-8 sm:w-[70%] md:w-[320px] lg:w-full">
+              <Music mode={mode} />
+            </div>
+          </div>
         </div>
-
 
         <div className="w-full max-w-6xl mt-20">
           <div className={`p-8 rounded-3xl shadow-sm border ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
@@ -293,7 +315,6 @@ const Home = () => {
           </div>
         </div>
 
-     
         <div className={`w-full max-w-6xl mt-12 mb-20 rounded-3xl p-10 flex flex-col items-center text-center transition-colors duration-500 ${darkMode ? "bg-gray-800/50" : (mode === "work" ? "bg-pink-50" : "bg-blue-50")}`}>
           <h1 style={{ fontFamily: "Poppins, sans-serif" }} className="text-3xl font-bold mb-6">How does it work?</h1>
           <p className={`leading-relaxed max-w-2xl mb-10 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>

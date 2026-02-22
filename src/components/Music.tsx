@@ -155,7 +155,15 @@ const Music = ({ mode }: MusicProps) => {
           ))}
         </select>
 
-        <audio ref={audioRef} src={currentTrack.file} />
+        <audio 
+  key={trackIndex} // This is the secret sauce!
+  ref={audioRef} 
+  src={currentTrack.file} 
+  onCanPlay={() => {
+    if (isPlaying) audioRef.current?.play().catch(console.error);
+  }}
+/>
+
       </div>
     </div>
   )

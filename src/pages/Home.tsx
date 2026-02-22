@@ -24,10 +24,9 @@ const Home = () => {
     completed: boolean;
   };
   const [mode, setMode] = useState<"work" | "break">("work");
-const [darkMode, setDarkMode] = useState(true);
-const [time, setTime] = useState<number>(25 * 60);
-
-
+  const [darkMode, setDarkMode] = useState(true);
+  const [time, setTime] = useState<number>(25 * 60);
+  const [sessionCount, setSessionCount] = useState(0); // Added for the long break logic
 
   const [tasks, setTasks] = useState<Task[]>(() => {
     const saved = localStorage.getItem("tasks");
@@ -41,12 +40,12 @@ const [time, setTime] = useState<number>(25 * 60);
     return saved ? JSON.parse(saved) : [];
   });
 
-
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const pink = "#E053A6";
   const blue = "#3B82F6";
+  
   const currentThemeColor = mode === "work" ? pink : blue;
 
   const meshBg = mode === "work"
@@ -67,37 +66,49 @@ const [time, setTime] = useState<number>(25 * 60);
     setInitial("");
   };
 
-  const totalTime = mode === "work" ? 25 * 60 : 5 * 60;
-  const progressPercent = ((totalTime - time) / totalTime) * 100;
+
+  const getTotalTime = () => {
+    if (mode === "work") return 25 * 60;
+    return (sessionCount > 0 && sessionCount % 4 === 0) ? 15 * 60 : 5 * 60;
+  };
+
+  const progressPercent = ((getTotalTime() - time) / getTotalTime()) * 100;
 
   useEffect(() => {
     if (start) {
       timerRef.current = setInterval(() => {
         setTime((prev) => {
           if (prev <= 1) {
-            if (timerRef.current) clearInterval(timerRef.current);
-            setStart(false);
             audioRef.current?.play();
 
             const today = new Date().toLocaleDateString("en-US", { weekday: "short" });
-            setSessions((prevSessions) => {
-              const existing = prevSessions.find((s) => s.day === today);
-              if (existing) {
-                return prevSessions.map((s) =>
-                  s.day === today
-                    ? { ...s, minutes: s.minutes + (mode === "work" ? 25 : 5) }
-                    : s
-                );
-              } else {
-                return [...prevSessions, { day: today, minutes: mode === "work" ? 25 : 5 }];
-              }
-            });
+         
+            if (mode === "work") {
+              const nextCount = sessionCount + 1;
+              setSessionCount(nextCount);
+              setMode("break");
+              setTime(nextCount % 4 === 0 ? 15 * 60 : 5 * 60);
+              
+              setSessions((prevSessions) => {
+                const existing = prevSessions.find((s) => s.day === today);
+                if (existing) {
+                  return prevSessions.map((s) =>
+                    s.day === today ? { ...s, minutes: s.minutes + 25 } : s
+                  );
+                } else {
+                  return [...prevSessions, { day: today, minutes: 25 }];
+                }
+              });
+            } else {
+              setMode("work");
+              setTime(25 * 60);
+            }
 
             if (Notification.permission === "granted") {
               new Notification(
                 mode === "work"
-                  ? "Work session complete! Time for a break "
-                  : "Break over! Back to focus "
+                  ? "Work session complete! Time for a break"
+                  : "Break over! Back to focus"
               );
             }
             return 0;
@@ -109,7 +120,7 @@ const [time, setTime] = useState<number>(25 * 60);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [start, mode]);
+  }, [start, mode, sessionCount]); 
 
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(tasks));
@@ -205,7 +216,11 @@ const [time, setTime] = useState<number>(25 * 60);
                 Pomodoro
               </button>
               <button 
-                onClick={() => { setMode("break"); setTime(5*60); setStart(false); }}
+                onClick={() => { 
+                  setMode("break"); 
+                  setTime((sessionCount > 0 && sessionCount % 4 === 0) ? 15*60 : 5*60); 
+                  setStart(false); 
+                }}
                 className={`px-6 py-2 rounded-full font-bold transition-all ${mode === "break" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-600 hover:bg-gray-300"}`}
               >
                 Break
@@ -235,7 +250,7 @@ const [time, setTime] = useState<number>(25 * 60);
                 {start ? "Pause" : "Start"}
               </button>
               <button
-                onClick={() => { setStart(false); setTime(mode === "work" ? 25*60 : 5*60); }}
+                onClick={() => { setStart(false); setTime(mode === "work" ? 25*60 : ((sessionCount > 0 && sessionCount % 4 === 0) ? 15*60 : 5*60)); }}
                 style={{ borderColor: currentThemeColor, color: currentThemeColor }}
                 className="px-8 py-2 border-2 font-semibold rounded-full hover:bg-white/10 transition-all"
               >
@@ -282,7 +297,7 @@ const [time, setTime] = useState<number>(25 * 60);
         <div className={`w-full max-w-6xl mt-12 mb-20 rounded-3xl p-10 flex flex-col items-center text-center transition-colors duration-500 ${darkMode ? "bg-gray-800/50" : (mode === "work" ? "bg-pink-50" : "bg-blue-50")}`}>
           <h1 style={{ fontFamily: "Poppins, sans-serif" }} className="text-3xl font-bold mb-6">How does it work?</h1>
           <p className={`leading-relaxed max-w-2xl mb-10 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-            The Pomodoro Technique breaks work into intervals, traditionally 25 minutes in length, separated by short breaks.
+            The Pomodoro Technique breaks work into intervals, traditionally 25 minutes in length, separated by short breaks. After 4 sessions, take a longer 15-minute break!
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
             <div className="flex flex-col items-center gap-4">

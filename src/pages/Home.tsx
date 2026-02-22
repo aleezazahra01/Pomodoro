@@ -5,6 +5,7 @@ import focus from "../assets/undraw_taking-notes_oyqz.svg";
 import { buildStyles, CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import Music from "../components/Music";
+
 import Head from '../components/Head'
 import Foot from "../components/Footer"
 import {
@@ -22,17 +23,11 @@ const Home = () => {
     text: string;
     completed: boolean;
   };
+  const [mode, setMode] = useState<"work" | "break">("work");
+const [darkMode, setDarkMode] = useState(true);
+const [time, setTime] = useState<number>(25 * 60);
 
 
-  const [mode, setMode] = useState<"work" | "break">(() => {
-    return (localStorage.getItem("pomo_mode") as "work" | "break") || "work";
-  });
-
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem("theme");
-   
-    return saved ? saved === "dark" : true;
-  });
 
   const [tasks, setTasks] = useState<Task[]>(() => {
     const saved = localStorage.getItem("tasks");
@@ -40,7 +35,7 @@ const Home = () => {
   });
   const [initial, setInitial] = useState<string>("");
   const [start, setStart] = useState(false);
-  const [time, setTime] = useState<number>(mode === "work" ? 25 * 60 : 5 * 60);
+
   const [sessions, setSessions] = useState<{ day: string; minutes: number }[]>(() => {
     const saved = localStorage.getItem("sessions");
     return saved ? JSON.parse(saved) : [];
@@ -146,21 +141,15 @@ const Home = () => {
         <div style={{ background: meshBg }} className="fixed inset-0 z-0 transition-opacity duration-1000" />
       )}
 
-      <Head darkMode={darkMode} mode={mode} />
+      <Head darkMode={darkMode} mode={mode} setDarkMode={setDarkMode}/>
+
 
       <div className="relative z-10 w-full px-4 py-10 md:px-10 lg:px-20 flex flex-col items-center">
-        <div className="w-full max-w-7xl flex justify-end mb-4">
-          <button 
-            onClick={() => setDarkMode(!darkMode)}
-            className="p-2 rounded-lg bg-white text-gray-800 -mt-5 text-sm font-bold shadow-md hover:bg-gray-300 transition-colors"
-          >
-            {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
-          </button>
-        </div>
+   
 
         <div className="grid grid-cols-1 mt-3 lg:grid-cols-3 gap-12 w-full max-w-7xl items-start">
     
-          <div className="order-2 lg:order-1 flex flex-col space-y-6 w-full">
+          <div className="order-2 lg:order-1 lg:mr-9 lg:mt-24 flex flex-col space-y-6 w-full">
             <div className="flex gap-2">
               <input
                 onKeyDown={(e) => e.key === "Enter" && addTask()}
@@ -255,14 +244,11 @@ const Home = () => {
             </div>
           </div>
 
-    
-        <div className="order-3 w-full flex justify-center lg:justify-end">
-  <div className="w-[90%] sm:w-[70%] md:w-[320px] lg:w-full">
+    <div className="order-3 w-full flex justify-center lg:justify-end">
+  <div className="w-[90%] lg:mt-8 sm:w-[70%] md:w-[320px] lg:w-full">
     <Music mode={mode} />
   </div>
 </div>
-
-          
         </div>
 
 

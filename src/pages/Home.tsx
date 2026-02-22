@@ -66,7 +66,7 @@ const Home = () => {
     setInitial("");
   };
 
-  // Logic to handle the end of a timer
+
   const handleSwitch = () => {
     audioRef.current?.play();
     const today = new Date().toLocaleDateString("en-US", { weekday: "short" });
@@ -102,7 +102,7 @@ const Home = () => {
     }
   };
 
-  // Main Timer Effect
+
   useEffect(() => {
     if (start && time > 0) {
       timerRef.current = setInterval(() => {
@@ -153,7 +153,7 @@ const Home = () => {
 
       <div className="relative z-10 w-full px-4 py-10 md:px-10 lg:px-20 flex flex-col items-center">
         <div className="grid grid-cols-1 mt-3 lg:grid-cols-3 gap-12 w-full max-w-7xl items-start">
-        {/* TASK LIST SECTION */}
+      
 <div className="order-2 lg:order-1 lg:mr-9 lg:mt-24 flex flex-col space-y-6 w-full">
   <div className="flex gap-2">
     <input
@@ -198,10 +198,10 @@ const Home = () => {
       </div>
     ))}
 
-    {/* NEW PLACEHOLDER CARD - Fills the blank space */}
+
     <div 
       className={`mt-4 p-6 rounded-xl border-2 border-dashed flex flex-col items-center justify-center text-center transition-all duration-500 ${darkMode ? "bg-gray-800/20" : "bg-gray-50/50"}`}
-      style={{ borderColor: `${currentThemeColor}44` }} // Adds 44 for low opacity/alpha
+      style={{ borderColor: `${currentThemeColor}44` }}
     >
       <div 
         className="mb-3 p-3 rounded-full bg-opacity-10" 
@@ -228,8 +228,7 @@ const Home = () => {
     </div>
   </div>
 </div>
-          {/*tasks session*/}
-
+         
           <div className="order-1 lg:order-2 flex flex-col items-center space-y-8">
             <div className="flex gap-4">
               <button 
